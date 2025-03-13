@@ -14,7 +14,7 @@
 		7D8566372D82731200CD65E5 /* Exceptions for "SocialMedia" folder in "SocialMedia" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				Supproting/Info.plist,
 			);
 			target = 7D8566212D82731100CD65E5 /* SocialMedia */;
 		};
