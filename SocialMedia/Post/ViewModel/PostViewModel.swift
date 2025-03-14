@@ -15,6 +15,8 @@ final class PostViewModel {
     
     var onPostsUpdated: (() -> Void)?
     
+//Это были моковые данные, чисто для теста оставил
+    
 //    func loadMockPosts() {
 //        allPosts = (1...30).map {
 //            PostWithUser(
@@ -32,11 +34,13 @@ final class PostViewModel {
         fetchMoreFromAPI()
     }
     
+    // подтягиваем данные
     func fetchPosts(limit: Int, offset: Int, completion: @escaping (Result<[PostWithUser], Error>) -> Void) {
         let postsURL = "https://jsonplaceholder.typicode.com/posts?_start=\(offset)&_limit=\(limit)"
         let usersURL = "https://jsonplaceholder.typicode.com/users"
     }
     
+    // подгружаем больше данных limit - сколько постов загрузить в массив, offset - откуда начинать. И так иттерациями мы грузим по 50 постов, дабы разгрузиться
     private func fetchMoreFromAPI() {
         guard hasMoreData else { return }
 
@@ -57,7 +61,7 @@ final class PostViewModel {
                 self.nextAPIPage += 1
                 self.isLoading = false
 
-                self.loadNextPage()
+                self.loadNextPage() // сразу же отобразим следующие 10 постов после подгрузки, передавая в UI
             case .failure(let error):
                 print("Ошибка дозагрузки:", error)
                 self.isLoading = false
@@ -72,7 +76,7 @@ final class PostViewModel {
             switch result {
             case .success(let posts):
                 self.allPosts = posts
-                self.nextAPIPage = 1 
+                self.nextAPIPage = 1
                 self.loadNextPage()
             case .failure(let error):
                 print("API Error:", error)
@@ -80,11 +84,16 @@ final class PostViewModel {
         }
     }
     
+    // Подгружаем данные в UI
     func loadNextPage() {
-        guard !isLoading else { return }
+        guard !isLoading else { return } // Пока идет загрузка, не запускать, иначе появятся дубликаты
+        guard self.allPosts.count < 99 else { // Если данных от 100, то больше не грузим (данные закончились)
+            isLoading = false
+            return
+        }
         isLoading = true
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in // имитирую что данные просто быстро грузятся, а не моментально, что невозможно
             guard let self = self else { return }
 
             let start = self.currentPage * self.pageSize
@@ -101,7 +110,7 @@ final class PostViewModel {
 
             self.onPostsUpdated?()
             
-            let remaining = self.allPosts.count - (self.currentPage * self.pageSize)
+            let remaining = self.allPosts.count - (self.currentPage * self.pageSize) // если осталось 10 и меньше, то мы подгружаем еще одну порцию данных в массив (50 шт)
             if remaining <= self.pageSize && self.hasMoreData {
                 self.fetchMoreFromAPI()
             }
