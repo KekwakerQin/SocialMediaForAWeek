@@ -1,7 +1,9 @@
 import UIKit
 
 final class PostCell: UITableViewCell {
-    static let reuseId = "PostCell" // Для повторного использования ячейки
+    static let reuseId = "PostCell"
+    
+    private let avatarImageView = UIImageView()
     
     private let titleLabel = UILabel()
     private let bodyLabel = UILabel()
@@ -12,16 +14,34 @@ final class PostCell: UITableViewCell {
     }
     
     required init?(coder: NSCoder) {
-        fatalError("Not used") // Работаем только кодом
+        fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(with post: Post) {
+
+    // ячейка для модели
+    func configure(with post: PostWithUser) {
         titleLabel.text = post.title
         bodyLabel.text = post.body
+        loadAvatar(url: post.avatarURL)
+    }
+
+    private func loadAvatar(url: URL) {
+        // Апдейт. Возможно можно было бы добавить кэширование
+        URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+            guard let self = self, let data = data, error == nil else { return }
+            DispatchQueue.main.async {
+                self.avatarImageView.image = UIImage(data: data)
+            }
+        }.resume()
     }
     
+    // Настройка UI
     private func setupUI() {
-        // адаптивный шрифт
+        avatarImageView.translatesAutoresizingMaskIntoConstraints = false
+        avatarImageView.contentMode = .scaleAspectFill
+        avatarImageView.clipsToBounds = true
+        avatarImageView.layer.cornerRadius = 25
+        
         titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
         titleLabel.adjustsFontForContentSizeCategory = true
         titleLabel.numberOfLines = 0
@@ -31,19 +51,70 @@ final class PostCell: UITableViewCell {
         bodyLabel.numberOfLines = 0
         bodyLabel.textColor = .darkGray
         
-        let stack = UIStackView(arrangedSubviews: [titleLabel, bodyLabel])
-        stack.axis = .vertical
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.isLayoutMarginsRelativeArrangement = true
-        stack.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
-        stack.translatesAutoresizingMaskIntoConstraints = false
+        // Создание вертикального стека для текста
+        let textStack = UIStackView(arrangedSubviews: [titleLabel, bodyLabel])
+        textStack.axis = .vertical
+        textStack.spacing = 8
+        textStack.translatesAutoresizingMaskIntoConstraints = false
         
-        contentView.addSubview(stack)
+        // Горизонтальный стек, объединяет аватарку и текст
+        let horizontalStack = UIStackView(arrangedSubviews: [avatarImageView, textStack])
+        horizontalStack.axis = .horizontal
+        horizontalStack.spacing = 12
+        horizontalStack.alignment = .center
+        horizontalStack.translatesAutoresizingMaskIntoConstraints = false
+        
+        contentView.addSubview(horizontalStack)
+        
+        // Auto Layout для горизонтального стека и аватар эмейджа
         NSLayoutConstraint.activate([
-                stack.topAnchor.constraint(equalTo: contentView.topAnchor),
-                stack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-                stack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-                stack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
-            ])
+            // Ограничения для avatarImageView
+            avatarImageView.widthAnchor.constraint(equalToConstant: 50),
+            avatarImageView.heightAnchor.constraint(equalToConstant: 50),
+            
+            // Ограничения для горизонтального стека
+            horizontalStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
+            horizontalStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12),
+            horizontalStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            horizontalStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
+        ])
     }
 }
+
+#if DEBUG
+import SwiftUI
+
+struct PostCell_Previews: PreviewProvider {
+    static var previews: some View {
+        UIViewPreview {
+            let cell = PostCell(style: .default, reuseIdentifier: nil)
+            // Передаем данные для предпросмотра
+            let dummyPost = PostWithUser(
+                id: 1,
+                title: "Title",
+                body: "Body place of text",
+                userName: "Test User",
+                avatarURL: URL(string: "https://i.pravatar.cc/150?u=1")!
+            )
+            cell.configure(with: dummyPost)
+            return cell
+        }
+        .previewLayout(.fixed(width: 375, height: 100))
+    }
+}
+
+// отображение в Canvas
+struct UIViewPreview<View: UIView>: UIViewRepresentable {
+    let viewBuilder: () -> View
+
+    init(_ builder: @escaping () -> View) {
+        self.viewBuilder = builder
+    }
+
+    func makeUIView(context: Context) -> View {
+        viewBuilder()
+    }
+
+    func updateUIView(_ uiView: View, context: Context) {}
+}
+#endif

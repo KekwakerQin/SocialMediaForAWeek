@@ -6,14 +6,43 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		7D8EDE382D82C7A500DCEAC8 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 7D8EDE372D82C7A500DCEAC8 /* Alamofire */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7D8EDE542D83FBDE00DCEAC8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7D85661A2D82731100CD65E5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7D8566212D82731100CD65E5;
+			remoteInfo = SocialMedia;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		7D8EDE3D2D82C85400DCEAC8 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		7D8566222D82731100CD65E5 /* SocialMedia.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SocialMedia.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7D8EDE502D83FBDE00DCEAC8 /* SocialMediaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SocialMediaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		7D8566372D82731200CD65E5 /* Exceptions for "SocialMedia" folder in "SocialMedia" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Info.plist,
 				Supproting/Info.plist,
 			);
 			target = 7D8566212D82731100CD65E5 /* SocialMedia */;
@@ -29,10 +58,23 @@
 			path = SocialMedia;
 			sourceTree = "<group>";
 		};
+		7D8EDE512D83FBDE00DCEAC8 /* SocialMediaTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SocialMediaTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		7D85661F2D82731100CD65E5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7D8EDE382D82C7A500DCEAC8 /* Alamofire in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7D8EDE4D2D83FBDE00DCEAC8 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -46,6 +88,8 @@
 			isa = PBXGroup;
 			children = (
 				7D8566242D82731100CD65E5 /* SocialMedia */,
+				7D8EDE512D83FBDE00DCEAC8 /* SocialMediaTests */,
+				7D8EDE3B2D82C7ED00DCEAC8 /* Frameworks */,
 				7D8566232D82731100CD65E5 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,8 +98,16 @@
 			isa = PBXGroup;
 			children = (
 				7D8566222D82731100CD65E5 /* SocialMedia.app */,
+				7D8EDE502D83FBDE00DCEAC8 /* SocialMediaTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		7D8EDE3B2D82C7ED00DCEAC8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -68,6 +120,7 @@
 				7D85661E2D82731100CD65E5 /* Sources */,
 				7D85661F2D82731100CD65E5 /* Frameworks */,
 				7D8566202D82731100CD65E5 /* Resources */,
+				7D8EDE3D2D82C85400DCEAC8 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -78,10 +131,34 @@
 			);
 			name = SocialMedia;
 			packageProductDependencies = (
+				7D8EDE372D82C7A500DCEAC8 /* Alamofire */,
 			);
 			productName = SocialMedia;
 			productReference = 7D8566222D82731100CD65E5 /* SocialMedia.app */;
 			productType = "com.apple.product-type.application";
+		};
+		7D8EDE4F2D83FBDE00DCEAC8 /* SocialMediaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7D8EDE562D83FBDE00DCEAC8 /* Build configuration list for PBXNativeTarget "SocialMediaTests" */;
+			buildPhases = (
+				7D8EDE4C2D83FBDE00DCEAC8 /* Sources */,
+				7D8EDE4D2D83FBDE00DCEAC8 /* Frameworks */,
+				7D8EDE4E2D83FBDE00DCEAC8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7D8EDE552D83FBDE00DCEAC8 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				7D8EDE512D83FBDE00DCEAC8 /* SocialMediaTests */,
+			);
+			name = SocialMediaTests;
+			packageProductDependencies = (
+			);
+			productName = SocialMediaTests;
+			productReference = 7D8EDE502D83FBDE00DCEAC8 /* SocialMediaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -96,6 +173,10 @@
 					7D8566212D82731100CD65E5 = {
 						CreatedOnToolsVersion = 16.2;
 					};
+					7D8EDE4F2D83FBDE00DCEAC8 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 7D8566212D82731100CD65E5;
+					};
 				};
 			};
 			buildConfigurationList = 7D85661D2D82731100CD65E5 /* Build configuration list for PBXProject "SocialMedia" */;
@@ -107,18 +188,29 @@
 			);
 			mainGroup = 7D8566192D82731100CD65E5;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				7D8EDE362D82C7A500DCEAC8 /* XCRemoteSwiftPackageReference "Alamofire" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7D8566232D82731100CD65E5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				7D8566212D82731100CD65E5 /* SocialMedia */,
+				7D8EDE4F2D83FBDE00DCEAC8 /* SocialMediaTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		7D8566202D82731100CD65E5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7D8EDE4E2D83FBDE00DCEAC8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -135,7 +227,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7D8EDE4C2D83FBDE00DCEAC8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7D8EDE552D83FBDE00DCEAC8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7D8566212D82731100CD65E5 /* SocialMedia */;
+			targetProxy = 7D8EDE542D83FBDE00DCEAC8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		7D8566392D82731200CD65E5 /* Debug */ = {
@@ -147,12 +254,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = FM5UA69R37;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SocialMedia/Info.plist;
+				INFOPLIST_FILE = /Users/qinchingis/Desktop/Xcode/SocialMedia/SocialMedia/Supproting/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -175,12 +283,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = FM5UA69R37;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SocialMedia/Info.plist;
+				INFOPLIST_FILE = /Users/qinchingis/Desktop/Xcode/SocialMedia/SocialMedia/Supproting/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -313,6 +422,42 @@
 			};
 			name = Release;
 		};
+		7D8EDE572D83FBDE00DCEAC8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FM5UA69R37;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Kekwaker.SocialMediaTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SocialMedia.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SocialMedia";
+			};
+			name = Debug;
+		};
+		7D8EDE582D83FBDE00DCEAC8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FM5UA69R37;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Kekwaker.SocialMediaTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SocialMedia.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SocialMedia";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -334,7 +479,35 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		7D8EDE562D83FBDE00DCEAC8 /* Build configuration list for PBXNativeTarget "SocialMediaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7D8EDE572D83FBDE00DCEAC8 /* Debug */,
+				7D8EDE582D83FBDE00DCEAC8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7D8EDE362D82C7A500DCEAC8 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.10.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7D8EDE372D82C7A500DCEAC8 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7D8EDE362D82C7A500DCEAC8 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 7D85661A2D82731100CD65E5 /* Project object */;
 }
