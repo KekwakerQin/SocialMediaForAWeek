@@ -7,6 +7,9 @@ final class PostCell: UITableViewCell {
     
     private let titleLabel = UILabel()
     private let bodyLabel = UILabel()
+    private let likeButton = UIButton(type: .system)
+    
+    var onLikeTapped: (() -> Void)?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -23,6 +26,10 @@ final class PostCell: UITableViewCell {
         titleLabel.text = post.title
         bodyLabel.text = post.body
         loadAvatar(url: post.avatarURL)
+        
+        let heart = post.isLiked ? "♥︎" : "♡"
+        likeButton.setTitle(heart, for: .normal)
+        likeButton.tintColor = post.isLiked ? .systemRed : .lightGray
     }
 
     private func loadAvatar(url: URL) {
@@ -51,6 +58,11 @@ final class PostCell: UITableViewCell {
         bodyLabel.numberOfLines = 0
         bodyLabel.textColor = .darkGray
         
+        likeButton.setTitle("♡", for: .normal) // пустое сердечко
+        likeButton.titleLabel?.font = UIFont.systemFont(ofSize: 20)
+        likeButton.setContentHuggingPriority(.required, for: .horizontal)
+        likeButton.addTarget(self, action: #selector(didTapLike), for: .touchUpInside)
+        
         // Создание вертикального стека для текста
         let textStack = UIStackView(arrangedSubviews: [titleLabel, bodyLabel])
         textStack.axis = .vertical
@@ -63,8 +75,10 @@ final class PostCell: UITableViewCell {
         horizontalStack.spacing = 12
         horizontalStack.alignment = .center
         horizontalStack.translatesAutoresizingMaskIntoConstraints = false
+        horizontalStack.addArrangedSubview(likeButton)
         
         contentView.addSubview(horizontalStack)
+        
         
         // Auto Layout для горизонтального стека и аватар эмейджа
         NSLayoutConstraint.activate([
@@ -79,6 +93,11 @@ final class PostCell: UITableViewCell {
             horizontalStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
         ])
     }
+    
+    @objc private func didTapLike() {
+        onLikeTapped?()
+    }
+    
 }
 
 #if DEBUG

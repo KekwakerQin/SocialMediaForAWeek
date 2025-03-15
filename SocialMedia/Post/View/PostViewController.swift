@@ -4,9 +4,18 @@ final class PostViewController: UIViewController {
     private let tableView = UITableView()
     private let viewModel = PostViewModel()
     
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: "Очистить",
+            style: .plain,
+            target: self,
+            action: #selector(clearCacheTapped)
+        )
         
         setupTableView()
         bindViewModel()
@@ -58,19 +67,41 @@ extension PostViewController: UITableViewDataSource, UITableViewDelegate {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: PostCell.reuseId, for: indexPath) as? PostCell else {
             return UITableViewCell()
         }
+        
         cell.configure(with: post)
+        
+        cell.onLikeTapped = { [weak self] in
+            self?.viewModel.toggleLike(for: post)
+        }
         return cell
     }
-
+    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let offsetY = scrollView.contentOffset.y
         let contentHeight = scrollView.contentSize.height
         let frameHeight = scrollView.frame.size.height
         
         if offsetY > contentHeight - frameHeight * 1.5 {
+            guard !viewModel.isLoading else { return }
             showLoadingFooter()
-            viewModel.loadNextPage()
+            
+            // Если в памяти есть посты для следующей страницы — показываем
+            let nextStart = viewModel.currentPage * viewModel.pageSize
+            if viewModel.allPosts.count > nextStart {
+                viewModel.loadNextPage()
+            } else if viewModel.hasMoreData {
+                // Если нет — подгружаем
+                viewModel.fetchMoreFromAPI()
+            } else {
+                hideLoadingFooter()
+            }
         }
+    }
+    
+    @objc private func clearCacheTapped() {
+        viewModel.clearAllData()
+        tableView.reloadData()
+        title = "Posts (0)"
     }
 }
 
@@ -86,7 +117,6 @@ struct PostViewController_Previews: PreviewProvider {
     }
 }
 
-/// Хелпер для отображения UIViewController в SwiftUI Canvas
 struct ViewControllerPreview<ViewController: UIViewController>: UIViewControllerRepresentable {
     let viewControllerBuilder: () -> ViewController
 

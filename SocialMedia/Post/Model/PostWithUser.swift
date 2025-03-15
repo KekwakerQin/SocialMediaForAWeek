@@ -5,4 +5,5 @@ struct PostWithUser {
     let body: String
     let userName: String
     let avatarURL: URL
+    var isLiked: Bool = false
 }
