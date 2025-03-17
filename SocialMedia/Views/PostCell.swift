@@ -48,52 +48,55 @@ final class PostCell: UITableViewCell {
         avatarImageView.contentMode = .scaleAspectFill
         avatarImageView.clipsToBounds = true
         avatarImageView.layer.cornerRadius = 25
-        
+
         titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
         titleLabel.adjustsFontForContentSizeCategory = true
-        titleLabel.numberOfLines = 0
-        
+        titleLabel.numberOfLines = 2
+        titleLabel.lineBreakMode = .byTruncatingTail
+        titleLabel.adjustsFontSizeToFitWidth = true
+        titleLabel.minimumScaleFactor = 0.8
+
         bodyLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         bodyLabel.adjustsFontForContentSizeCategory = true
-        bodyLabel.numberOfLines = 0
-        bodyLabel.textColor = .darkGray
-        
-        likeButton.setTitle("♡", for: .normal) // пустое сердечко
+        bodyLabel.numberOfLines = 3
+        bodyLabel.lineBreakMode = .byTruncatingTail
+        bodyLabel.adjustsFontSizeToFitWidth = true
+        bodyLabel.minimumScaleFactor = 0.8
+        bodyLabel.textColor = .gray
+
+        likeButton.setTitle("♡", for: .normal)
         likeButton.titleLabel?.font = UIFont.systemFont(ofSize: 20)
         likeButton.setContentHuggingPriority(.required, for: .horizontal)
+        likeButton.setContentCompressionResistancePriority(.required, for: .horizontal)
         likeButton.addTarget(self, action: #selector(didTapLike), for: .touchUpInside)
-        
-        // Создание вертикального стека для текста
+        likeButton.translatesAutoresizingMaskIntoConstraints = false
+        likeButton.widthAnchor.constraint(equalToConstant: 40).isActive = true // фикс ширина
+
         let textStack = UIStackView(arrangedSubviews: [titleLabel, bodyLabel])
         textStack.axis = .vertical
         textStack.spacing = 8
         textStack.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Горизонтальный стек, объединяет аватарку и текст
-        let horizontalStack = UIStackView(arrangedSubviews: [avatarImageView, textStack])
+        textStack.heightAnchor.constraint(lessThanOrEqualToConstant: 80).isActive = true
+
+        let horizontalStack = UIStackView(arrangedSubviews: [avatarImageView, textStack, likeButton])
         horizontalStack.axis = .horizontal
         horizontalStack.spacing = 12
         horizontalStack.alignment = .center
         horizontalStack.translatesAutoresizingMaskIntoConstraints = false
-        horizontalStack.addArrangedSubview(likeButton)
-        
+
         contentView.addSubview(horizontalStack)
-        
-        
-        // Auto Layout для горизонтального стека и аватар эмейджа
+
         NSLayoutConstraint.activate([
-            // Ограничения для avatarImageView
             avatarImageView.widthAnchor.constraint(equalToConstant: 50),
             avatarImageView.heightAnchor.constraint(equalToConstant: 50),
-            
-            // Ограничения для горизонтального стека
+
             horizontalStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
             horizontalStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12),
             horizontalStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            horizontalStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
+            horizontalStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
         ])
     }
-    
+
     @objc private func didTapLike() {
         onLikeTapped?()
     }
@@ -111,7 +114,7 @@ struct PostCell_Previews: PreviewProvider {
             let dummyPost = PostWithUser(
                 id: 1,
                 title: "Title",
-                body: "Body place of text",
+                body: "Body place of text many textBody place of text many textBody place of text many textBody place of text many textBody place of text many textBody place of text many textBody place of text many textBody place of text many textBody place of tet many textBody place of text many textBody place of text many textBody place of text many textBody place of text many textBody place of t",
                 userName: "Test User",
                 avatarURL: URL(string: "https://i.pravatar.cc/150?u=1")!
             )

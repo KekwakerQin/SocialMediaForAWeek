@@ -1,171 +1,148 @@
 import Foundation
 
 final class PostViewModel {
-    private(set) var posts: [PostWithUser] = []
-        
-    internal(set) var currentPage = 0
+    private(set) var posts: [PostWithUser] = [] // Показанные в таблице
+    private(set) var allPosts: [PostWithUser] = []  // Все загруженные (локально + из сети)
+    
+    private(set) var currentPage = 0    // Номер "порции" (каждая по pageSize)
     let pageSize = 10
-    var isLoading = false
+    
+    var isLoading = false {
+        didSet {
+            onLoadingStateChanged?(isLoading)
+        }
+    }
     var hasMoreData = true
-    var allPosts: [PostWithUser] = []
     
-    private var nextAPIPage = 0
-    private let apiPageSize = 50 // сколько загружаем из API
-        
+    // Коллбеки для ViewController
     var onPostsUpdated: (() -> Void)?
+    var onLoadingStateChanged: ((Bool) -> Void)?
     
-//Это были моковые данные, чисто для теста оставил
-    
-//    func loadMockPosts() {
-//        allPosts = (1...30).map {
-//            PostWithUser(
-//                id: $0,
-//                title: "Заголовок \($0)",
-//                body: "Пост: \($0)",
-//                userName: "User \($0)",
-//                avatarURL: URL(string: "https://i.pravatar.cc/150?u=\($0)")!
-//            )
-//        }
-//        loadNextPage()
-//    }
-    
-    func loadInitialPosts() {
+    func loadLocalPostsIfAny() {
         let savedPosts = CoreDataService.shared.loadPosts()
-
         if !savedPosts.isEmpty {
+            // например, сортируем лайкнутые вверх
             let sorted = savedPosts.sorted { $0.isLiked && !$1.isLiked }
-
-            self.posts = sorted
-            self.allPosts = sorted
-            self.currentPage = posts.count / pageSize
-            self.hasMoreData = true
-            self.onPostsUpdated?()
-            
-        }
-        else {
-            fetchMoreFromAPI()
+            allPosts = sorted
         }
     }
     
-    // подтягиваем данные
-    func fetchPosts(limit: Int, offset: Int, completion: @escaping (Result<[PostWithUser], Error>) -> Void) {
-        let postsURL = "https://jsonplaceholder.typicode.com/posts?_start=\(offset)&_limit=\(limit)"
-        let usersURL = "https://jsonplaceholder.typicode.com/users"
-    }
-    
-    // подгружаем больше данных limit - сколько постов загрузить в массив, offset - откуда начинать. И так иттерациями мы грузим по 50 постов, дабы разгрузиться
-    func fetchMoreFromAPI() {
+    func loadNextPage() {
         guard hasMoreData else { return }
-
+        guard !isLoading else { return }
+        
         isLoading = true
 
-        PostService.shared.fetchPosts(limit: pageSize, offset: allPosts.count) { [weak self] result in
-            guard let self = self else { return }
+        let nextPageStart = currentPage * pageSize
+        let nextPageEnd = nextPageStart + pageSize
+        
+        // Если уже в памяти (allPosts) лежит достаточно постов, берём оттуда
+        if allPosts.count >= nextPageEnd {
+            // Эмулируем "задержку 1 секунду"
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+                self?.appendNextChunkFromLocal()
+            }
+        } else {
+            // Иначе нужно подгрузить ещё с API
+            fetchMoreFromAPI { [weak self] success in
+                guard let self = self else { return }
+                
+                // Если API не смог ничего дать, дальше не идём
+                if !success {
+                    self.isLoading = false
+                    return
+                }
 
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    self.appendNextChunkFromLocal()
+                }
+            }
+        }
+    }
+    
+    private func appendNextChunkFromLocal() {
+        let start = currentPage * pageSize
+        let end = min(start + pageSize, allPosts.count)
+        
+        guard start < end else {
+            // Значит, может быть не осталось постов или они не пришли
+            isLoading = false
+            hasMoreData = false
+            onPostsUpdated?()
+            return
+        }
+        
+        let newPosts = allPosts[start..<end]
+        posts.append(contentsOf: newPosts)
+        currentPage += 1
+        
+        // Сохраняем в CoreData
+        CoreDataService.shared.saveAllPosts(posts)
+        
+        // Проверяем, не иссякли ли данные (если API вернул меньше 10, значит больше ничего нет)
+        if allPosts.count < currentPage * pageSize {
+            hasMoreData = false
+        }
+        
+        isLoading = false
+        onPostsUpdated?()
+    }
+    
+    func fetchMoreFromAPI(completion: @escaping (Bool) -> Void) {
+        let offset = allPosts.count // продолжаем с того места, где закончились
+        PostService.shared.fetchPosts(limit: pageSize, offset: offset) { result in
             switch result {
             case .success(var freshPosts):
-
-                // 🔁 Восстанавливаем лайки из базы
+                // Сверим статус лайка с кэшем
                 for i in 0..<freshPosts.count {
                     if let cached = CoreDataService.shared.findPost(by: freshPosts[i].id) {
                         freshPosts[i].isLiked = cached.isLiked
                     }
                 }
-
+                
                 if freshPosts.isEmpty {
                     self.hasMoreData = false
-                    self.isLoading = false
+                    completion(false)
                     return
                 }
 
+                // Добавляем их в allPosts
                 self.allPosts.append(contentsOf: freshPosts)
-
-                // Только часть отображаем сразу
-                let neededEnd = min((self.currentPage + 1) * self.pageSize, self.allPosts.count)
-                let newVisible = self.allPosts[self.posts.count..<neededEnd]
-                self.posts.append(contentsOf: newVisible)
-
-                self.currentPage += 1
-                self.isLoading = false
-
+                
+                // Сохраняем только свежие посты
                 CoreDataService.shared.saveAllPosts(freshPosts)
-                self.onPostsUpdated?()
-
+                
+                completion(true)
+                
             case .failure(let error):
-                print("Ошибка загрузки: \(error)")
-                self.isLoading = false
+                print("Ошибка загрузки с API: \(error)")
+                completion(false)
             }
         }
     }
-    func loadFromAPI() {
-        PostService.shared.fetchPosts(limit: 50, offset: 0) { [weak self] result in
-            guard let self = self else { return }
 
-            switch result {
-            case .success(let posts):
-                self.allPosts = posts
-                self.nextAPIPage = 1
-                self.loadNextPage()
-            case .failure(let error):
-                print("API Error:", error)
-            }
-        }
-    }
-    
-    // Подгружаем данные в UI
-    func loadNextPage() {
-        guard !isLoading else { return } // Пока идет загрузка, не запускать, иначе появятся дубликаты
-        isLoading = true
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in // имитирую что данные просто быстро грузятся, а не моментально, что невозможно
-            guard let self = self else { return }
-
-            let start = self.currentPage * self.pageSize
-            let end = min(start + self.pageSize, self.allPosts.count)
-            guard start < end else {
-                self.isLoading = false
-                return
-            }
-
-            let newPosts = self.allPosts[start..<end]
-            self.posts.append(contentsOf: newPosts)
-            self.currentPage += 1
-            self.isLoading = false
-
-            self.onPostsUpdated?()
-            CoreDataService.shared.saveAllPosts(self.posts)
-            
-            let remaining = self.allPosts.count - (self.currentPage * self.pageSize) // если осталось 10 и меньше, то мы подгружаем еще одну порцию данных в массив (50 шт)
-            if remaining <= self.pageSize && self.hasMoreData {
-                self.fetchMoreFromAPI()
-            }
-        }
-    }
-    
+    // MARK: - Лайки
     func toggleLike(for post: PostWithUser) {
         guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
-        
         posts[index].isLiked.toggle()
         
         if let allIndex = allPosts.firstIndex(where: { $0.id == post.id }) {
             allPosts[allIndex].isLiked = posts[index].isLiked
         }
-
+        
         CoreDataService.shared.saveLikeStatus(for: posts[index])
-
+        
         posts.sort { $0.isLiked && !$1.isLiked }
-
         onPostsUpdated?()
     }
-    
+
+    // MARK: - Очистка
     func clearAllData() {
         CoreDataService.shared.clearAllPosts()
         posts.removeAll()
         allPosts.removeAll()
         currentPage = 0
-        nextAPIPage = 0
         hasMoreData = true
         isLoading = false
     }
-    
 }

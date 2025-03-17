@@ -4,8 +4,6 @@ final class PostViewController: UIViewController {
     private let tableView = UITableView()
     private let viewModel = PostViewModel()
     
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
@@ -19,14 +17,26 @@ final class PostViewController: UIViewController {
         
         setupTableView()
         bindViewModel()
-        viewModel.loadInitialPosts()
+        
+        viewModel.loadLocalPostsIfAny()
+
+        viewModel.loadNextPage()
     }
     
     private func bindViewModel() {
         viewModel.onPostsUpdated = { [weak self] in
-            self?.tableView.reloadData()
-            self?.hideLoadingFooter()
-            self?.title = "Posts (\(self?.viewModel.posts.count))"
+            guard let self = self else { return }
+            self.tableView.reloadData()
+            self.hideLoadingFooter()
+            self.title = "Posts (\(self.viewModel.posts.count))"
+        }
+        
+        viewModel.onLoadingStateChanged = { [weak self] isLoading in
+            if isLoading {
+                self?.showLoadingFooter()
+            } else {
+                self?.hideLoadingFooter()
+            }
         }
     }
 
@@ -55,6 +65,17 @@ final class PostViewController: UIViewController {
     private func hideLoadingFooter() {
         tableView.tableFooterView = nil
     }
+    
+    @objc private func clearCacheTapped() {
+        viewModel.clearAllData()
+        
+        // Обнулить UI
+        tableView.reloadData()
+        title = "Posts (0)"
+        
+        // Запускаем заново
+        viewModel.loadNextPage()
+    }
 }
 
 extension PostViewController: UITableViewDataSource, UITableViewDelegate {
@@ -80,28 +101,17 @@ extension PostViewController: UITableViewDataSource, UITableViewDelegate {
         let offsetY = scrollView.contentOffset.y
         let contentHeight = scrollView.contentSize.height
         let frameHeight = scrollView.frame.size.height
-        
-        if offsetY > contentHeight - frameHeight * 1.5 {
-            guard !viewModel.isLoading else { return }
-            showLoadingFooter()
-            
-            // Если в памяти есть посты для следующей страницы — показываем
-            let nextStart = viewModel.currentPage * viewModel.pageSize
-            if viewModel.allPosts.count > nextStart {
-                viewModel.loadNextPage()
-            } else if viewModel.hasMoreData {
-                // Если нет — подгружаем
-                viewModel.fetchMoreFromAPI()
-            } else {
-                hideLoadingFooter()
-            }
+
+        // Если пользователь почти у нижней границы, но данных больше нет — вибрация
+        if offsetY > contentHeight - frameHeight * 0.9, !viewModel.hasMoreData {
+            vibrateErrorIfNeeded()
+            return
         }
-    }
-    
-    @objc private func clearCacheTapped() {
-        viewModel.clearAllData()
-        tableView.reloadData()
-        title = "Posts (0)"
+
+        // Обычная подгрузка при прокрутке
+        if offsetY > contentHeight - frameHeight * 1.5 {
+            viewModel.loadNextPage()
+        }
     }
 }
 
