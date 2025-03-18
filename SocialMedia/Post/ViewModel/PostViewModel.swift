@@ -4,7 +4,7 @@ final class PostViewModel {
     private(set) var posts: [PostWithUser] = [] // Показанные в таблице
     private(set) var allPosts: [PostWithUser] = []  // Все загруженные (локально + из сети)
     
-    private(set) var currentPage = 0    // Номер "порции" (каждая по pageSize)
+    private(set) var currentPage = 0
     let pageSize = 10
     
     var isLoading = false {
@@ -18,15 +18,29 @@ final class PostViewModel {
     var onPostsUpdated: (() -> Void)?
     var onLoadingStateChanged: ((Bool) -> Void)?
     
+    // Загрузка постов с локального хранилища, если отсутствуют - подгружаем с API
     func loadLocalPostsIfAny() {
         let savedPosts = CoreDataService.shared.loadPosts()
-        if !savedPosts.isEmpty {
-            // например, сортируем лайкнутые вверх
-            let sorted = savedPosts.sorted { $0.isLiked && !$1.isLiked }
-            allPosts = sorted
-        }
+
+            if !savedPosts.isEmpty {
+                // Сортируем, чтобы лайкнутые посты шли первыми
+                let sorted = savedPosts.sorted { $0.isLiked && !$1.isLiked }
+
+                self.allPosts = sorted
+
+                // Показываем ВСЕ сохранённые сразу
+                self.posts = sorted
+                self.currentPage = sorted.count / pageSize
+                self.hasMoreData = true
+
+                self.onPostsUpdated?()
+            } else {
+                // Если локальных постов нет — берём с API
+                fetchMoreFromAPI { _ in }
+            }
     }
     
+    // Метод, вызываемый контроллером при прокрутке вниз — загружает следующую "страницу".
     func loadNextPage() {
         guard hasMoreData else { return }
         guard !isLoading else { return }
@@ -60,6 +74,7 @@ final class PostViewModel {
         }
     }
     
+    // Берёт из allPosts следующие 'pageSize' постов и добавляет их в отображаемый список 'post'
     private func appendNextChunkFromLocal() {
         let start = currentPage * pageSize
         let end = min(start + pageSize, allPosts.count)
@@ -88,30 +103,34 @@ final class PostViewModel {
         onPostsUpdated?()
     }
     
+    // Запрос к API, чтобы получить ещё 10 постов (pageSize) с учётом уже имеющихся (offset).
     func fetchMoreFromAPI(completion: @escaping (Bool) -> Void) {
         let offset = allPosts.count // продолжаем с того места, где закончились
         PostService.shared.fetchPosts(limit: pageSize, offset: offset) { result in
             switch result {
             case .success(var freshPosts):
-                // Сверим статус лайка с кэшем
+                // Восстанавливаем лайки из кэша
                 for i in 0..<freshPosts.count {
                     if let cached = CoreDataService.shared.findPost(by: freshPosts[i].id) {
                         freshPosts[i].isLiked = cached.isLiked
                     }
                 }
-                
+
                 if freshPosts.isEmpty {
+                    // Если сервер вернул пустой список, значит дальше загружать нечего
                     self.hasMoreData = false
                     completion(false)
                     return
                 }
 
-                // Добавляем их в allPosts
+                // Добавляем к allPosts и сохраняем
                 self.allPosts.append(contentsOf: freshPosts)
-                
-                // Сохраняем только свежие посты
                 CoreDataService.shared.saveAllPosts(freshPosts)
-                
+
+                // 4. Отображаем сразу, без скролла
+                self.loadNextPage()
+
+                // 5. Завершаем
                 completion(true)
                 
             case .failure(let error):
@@ -122,6 +141,7 @@ final class PostViewModel {
     }
 
     // MARK: - Лайки
+    
     func toggleLike(for post: PostWithUser) {
         guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
         posts[index].isLiked.toggle()
@@ -137,6 +157,7 @@ final class PostViewModel {
     }
 
     // MARK: - Очистка
+    
     func clearAllData() {
         CoreDataService.shared.clearAllPosts()
         posts.removeAll()
